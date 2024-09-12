@@ -1,0 +1,262 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shopping Cart</title>
+    <link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+    <style>
+      body {
+        display: flex;
+        justify-content: space-between;
+        margin: 0;
+        padding: 20px;
+        background-color: #f6e7e7;
+        font-family: "Arial", sans-serif;
+      }
+
+      .wrapper {
+        width: 70%;
+        min-height: 100px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+
+      .item {
+        width: 200px;
+        min-height: 300px;
+        background-color: #fff;
+        margin: 10px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s;
+      }
+
+      .item:hover {
+        transform: scale(1.05);
+      }
+
+      .item img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-bottom: 2px solid #ddd;
+      }
+
+      .item-content {
+        padding: 15px;
+      }
+
+      .item h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 18px;
+      }
+
+      .item p {
+        margin: 0;
+        color: #e79090;
+        font-size: 14px;
+      }
+
+      .item-price {
+        color: #ff0569;
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+
+      .cart {
+        width: 25%;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .cart h2 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+
+      .cart-item {
+        display: flex;
+        justify-content: space-between;
+        width: 80%;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+      }
+
+      .cart-item span {
+        color: #555;
+        font-size: 14px;
+      }
+
+      .remove-btn {
+        background-color: #e44d26;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .remove-btn:hover {
+        background-color: #d14020;
+      }
+
+      .clear-cart-btn {
+        background-color: #777;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .clear-cart-btn:hover {
+        background-color: #555;
+      }
+
+      .total-price {
+        color: #e44d26;
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 20px;
+      }
+
+      .btn {
+        background-color: #40f5da;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .btn:hover {
+        background-color: #45a049;
+      }
+
+      /* Стилизация input type="number" */
+      input[type="number"] {
+        width: 50px;
+        padding: 5px;
+        font-size: 14px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper" id="productsContainer"></div>
+    <div class="cart" id="cartContainer">
+      <h2>Корзина <i class="fas fa-shopping-cart"></i></h2>
+      <div id="cartItems"></div>
+      <p class="total-price" id="totalPrice">Общая стоимость: $0.00</p>
+      <button class="clear-cart-btn" onclick="clearCart()">Очистить корзину</button>
+    </div>
+
+    <script>
+      let cart = [];
+
+      function updateCartUI() {
+        const cartItemsContainer = document.getElementById("cartItems");
+        const totalPriceElement = document.getElementById("totalPrice");
+
+        cartItemsContainer.innerHTML = "";
+        let totalPrice = 0;
+
+        cart.forEach((cartItem) => {
+          const cartItemElement = document.createElement("div");
+          cartItemElement.classList.add("cart-item");
+          cartItemElement.innerHTML = `
+            <span>${cartItem.title}</span>
+            <span>Количество: ${cartItem.quantity}</span>
+            <span>Стоимость: $${(cartItem.price * cartItem.quantity).toFixed(2)}</span>
+            <button class="remove-btn" onclick="removeItem(${cartItem.id})">Удалить</button>
+          `;
+          cartItemsContainer.appendChild(cartItemElement);
+
+          totalPrice += cartItem.price * cartItem.quantity;});
+
+        totalPriceElement.textContent = `Общая стоимость: $${totalPrice.toFixed(2)}`;
+      }
+
+      function addToCart(product, quantity) {
+        const existingCartItem = cart.find((item) => item.id === product.id);
+
+        if (existingCartItem) {
+          existingCartItem.quantity += quantity;
+        } else {
+          cart.push({
+            id: product.id,
+            title: product.title,
+            price: product.price,
+            quantity: quantity,
+          });
+        }
+
+        updateCartUI();
+      }
+
+      function removeItem(productId) {
+        cart = cart.filter((item) => item.id !== productId);
+        updateCartUI();
+      }
+
+      function clearCart() {
+        cart = [];
+        updateCartUI();
+      }
+
+      function generateProducts(
+        imageUrl,
+        productTitle,
+        productId,
+        productPrice
+      ) {
+        return `
+          <div class="item">
+            <img src=${imageUrl} alt="${productTitle}">
+            <div class="item-content">
+              <h3>${productTitle}</h3>
+              <p>$${productPrice.toFixed(2)}</p>
+              <input type="number" id="quantity-${productId}" placeholder="Количество">
+              <button class="btn" onclick="addToCart({ id: ${productId}, title: '${productTitle}', price: ${productPrice} }, parseInt(document.getElementById('quantity-${productId}').value) || 1)">Добавить в корзину</button>
+            </div>
+          </div>
+        `;
+      }
+
+      fetch("https://fakestoreapi.com/products/")
+        .then((res) => res.json())
+        .then((products) => {
+          let wrapper = document.getElementById("productsContainer");
+
+          let productsHtml = products
+            .map((item) =>
+              generateProducts(item.image, item.title, item.id, item.price)
+            )
+            .join("");
+
+          wrapper.innerHTML = productsHtml;
+        });
+    </script>
+  </body>
+</html>
